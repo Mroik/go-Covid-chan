@@ -7,7 +7,7 @@ import (
 	"strings"
 )
 
-var covidSource string = "https://www.worldometers.info/coronavirus/"
+const covidSource string = "https://www.worldometers.info/coronavirus/"
 
 func getStats() (string, error) {
 	resp, err := http.Get(covidSource)
@@ -44,4 +44,33 @@ func getCountry(country string) (string, string, string, error) {
 		}
 	}
 	return results[1], results[3], results[5], nil
+}
+
+func getTop() ([5]string, error) {
+	var results [5]string
+	regex, err := regexp.Compile("(?sm)(<tr style.*?>[[:digit:]]</td>.*?</a>)")
+	if err != nil {
+		return results, err
+	}
+	body, err := getStats()
+	if err != nil {
+		return results, err
+	}
+	temp := regex.FindAllStringSubmatch(body, 5)
+	regex, err = regexp.Compile(">[[:word:]]+</a>")
+	if err != nil {
+		return results, err
+	}
+	for x := 0; x < 5; x++ {
+		results[x] = strings.Split(temp[x][1], "<td")[2]
+		results[x] = regex.FindString(results[x])
+	}
+	regex, err = regexp.Compile("[[:word:]]+")
+	if err != nil {
+		return results, err
+	}
+	for x := 0; x < 5; x++ {
+		results[x] = regex.FindString(results[x])
+	}
+	return results, nil
 }
