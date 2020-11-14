@@ -24,6 +24,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate){
 		return
 	}
 
+	fmt.Println(m.Author.Username+" "+m.Content)
+
 	if strings.HasPrefix(m.Content,"!shutdown") && m.Author.ID==adminID{
 		s.Close()
 	}else if strings.HasPrefix(m.Content,"!covid top"){
