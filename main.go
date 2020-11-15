@@ -1,59 +1,60 @@
 package main
 
-import(
+import (
 	"fmt"
-	"syscall"
+	"github.com/bwmarrin/discordgo"
 	"os"
 	"os/signal"
-	"github.com/bwmarrin/discordgo"
 	"strings"
+	"syscall"
 )
 
-var game string="https://www.youtube.com/watch?v=j9V78UbdzWI"
+var game string = "https://www.youtube.com/watch?v=j9V78UbdzWI"
 var adminID string
 
-func onReady(s *discordgo.Session,event *discordgo.Ready){
-	err:=s.UpdateStreamingStatus(0,"with Ebola-chan",game)
-	if err!=nil{
+func onReady(s *discordgo.Session, event *discordgo.Ready) {
+	err := s.UpdateStreamingStatus(0, "with Ebola-chan", game)
+	if err != nil {
 		fmt.Println(err)
 	}
 }
 
-func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate){
-	if m.Author.ID==s.State.User.ID{
+func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
+	if m.Author.ID == s.State.User.ID {
 		return
 	}
 
-	fmt.Println(m.Author.Username+" "+m.Content)
+	fmt.Println(m.Author.Username + " " + m.Content)
 
-	if strings.HasPrefix(m.Content,"!shutdown") && m.Author.ID==adminID{
+	if strings.HasPrefix(m.Content, "!shutdown") && m.Author.ID == adminID {
 		s.Close()
-	}else if strings.HasPrefix(m.Content,"!covid top"){
-		res,err:=getTop()
-		if err!=nil{
+	} else if strings.HasPrefix(m.Content, "!covid top") {
+		res, err := getTop()
+		if err != nil {
 			fmt.Println(err)
 			return
 		}
-		for x:=0;x<5;x++{
-			s.ChannelMessageSend(m.ChannelID,res[x])
+		for x := 0; x < 5; x++ {
+			s.ChannelMessageSend(m.ChannelID, res[x])
 		}
-	}else if strings.HasPrefix(m.Content,"!covid stats") && len(strings.Split(m.Content," "))>2{
-		cases,deaths,recovers,err:=getCountry(strings.Split(m.Content," ")[2])
-		if err!=nil{
+	} else if strings.HasPrefix(m.Content, "!covid stats") && len(strings.Split(m.Content, " ")) > 2 {
+		cases, deaths, recovers, err := getCountry(strings.Split(m.Content, " ")[2])
+		if err != nil {
 			fmt.Println(err)
+			s.ChannelMessageSend(m.ChannelID, "Country not found")
 			return
 		}
-		s.ChannelMessageSend(m.ChannelID,"```Cases: "+cases+"\nDeaths: "+deaths+"\nRecovers: "+recovers+"```")
+		s.ChannelMessageSend(m.ChannelID, "```Cases: "+cases+"\nDeaths: "+deaths+"\nRecovers: "+recovers+"```")
 	}
 }
 
-func main(){
+func main() {
 	var token string
 	fmt.Scan(&token)
 	fmt.Scan(&adminID)
 
-	bot,err:=discordgo.New("Bot "+token)
-	if err!=nil{
+	bot, err := discordgo.New("Bot " + token)
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
@@ -61,8 +62,8 @@ func main(){
 	bot.AddHandler(onReady)
 	bot.AddHandler(onMessageCreate)
 
-	err=bot.Open()
-	if err!=nil{
+	err = bot.Open()
+	if err != nil {
 		fmt.Println(err)
 		return
 	}

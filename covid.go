@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"io/ioutil"
 	"net/http"
 	"regexp"
@@ -43,7 +44,12 @@ func getCountry(country string) (string, string, string, error) {
 			results[x] = temp[0]
 		}
 	}
-	return results[1], results[3], results[5], nil
+	if len(results) > 5 {
+		return results[1], results[3], results[5], nil
+	} else {
+		err = errors.New("Country not found")
+		return "", "", "", err
+	}
 }
 
 func getTop() ([5]string, error) {
