@@ -1,16 +1,21 @@
 package main
 
 import (
+	"encoding/binary"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
+	"io"
 	"os"
 	"os/signal"
 	"strings"
 	"syscall"
+	"time"
 )
 
 var game string
 var adminID string
+var musicBuffer = make([][]byte, 0)
+var musicFile string //Music file has to be in .dca format
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
 	err := s.UpdateStreamingStatus(0, "with Ebola-chan", game)
@@ -45,7 +50,73 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		s.ChannelMessageSend(m.ChannelID, "```Cases: "+cases+"\nDeaths: "+deaths+"\nRecovers: "+recovers+"```")
+	} else if strings.HasPrefix(m.Content, "!covid reminder") {
+		//Give as channelID the channel in which the user is in
+		guild, err := s.State.Guild(m.GuildID)
+		if err != nil {
+			fmt.Println(err)
+			s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
+		}
+		for _, vs := range guild.VoiceStates {
+			if vs.UserID == m.Author.ID {
+				err := playMusicBuffer(s, m.GuildID, vs.ChannelID)
+				if err != nil {
+					fmt.Println(err)
+					s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
+					return
+				}
+				return
+			}
+		}
+		if err != nil {
+			fmt.Println(err)
+			s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
+		}
 	}
+}
+
+func loadMusicBuffer() error {
+	file, err := os.Open(musicFile)
+	if err != nil {
+		return err
+	}
+	var fileLen uint16
+	for {
+		err = binary.Read(file, binary.LittleEndian, &fileLen)
+		if err == io.EOF || err == io.ErrUnexpectedEOF {
+			err := file.Close()
+			if err != nil {
+				return err
+			}
+			return nil
+		}
+		if err != nil {
+			return err
+		}
+		inBuff := make([]byte, fileLen)
+		err = binary.Read(file, binary.LittleEndian, &inBuff)
+		if err != nil {
+			return err
+		}
+		musicBuffer = append(musicBuffer, inBuff)
+	}
+}
+
+func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) error {
+	//TODO on connect
+	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
+	if err != nil {
+		return err
+	}
+	time.Sleep(250 * time.Millisecond)
+	vc.Speaking(true)
+	for _, buffer := range musicBuffer {
+		vc.OpusSend <- buffer
+	}
+	vc.Speaking(false)
+	time.Sleep(250 * time.Millisecond)
+	vc.Disconnect()
+	return nil
 }
 
 func main() {
@@ -53,6 +124,12 @@ func main() {
 	fmt.Scan(&token)
 	fmt.Scan(&adminID)
 	fmt.Scan(&game)
+	fmt.Scan(&musicFile)
+
+	err := loadMusicBuffer()
+	if err != nil {
+		fmt.Println(err)
+	}
 
 	bot, err := discordgo.New("Bot " + token)
 	if err != nil {
