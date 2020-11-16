@@ -56,6 +56,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 		if err != nil {
 			fmt.Println(err)
 			s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
+			return
 		}
 		for _, vs := range guild.VoiceStates {
 			if vs.UserID == m.Author.ID {
