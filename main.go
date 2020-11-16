@@ -9,7 +9,7 @@ import (
 	"syscall"
 )
 
-var game string = "https://www.youtube.com/watch?v=j9V78UbdzWI"
+var game string
 var adminID string
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
@@ -52,6 +52,7 @@ func main() {
 	var token string
 	fmt.Scan(&token)
 	fmt.Scan(&adminID)
+	fmt.Scan(&game)
 
 	bot, err := discordgo.New("Bot " + token)
 	if err != nil {
