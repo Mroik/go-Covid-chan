@@ -43,7 +43,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, res[x])
 		}
 	} else if strings.HasPrefix(m.Content, "!covid stats") && len(strings.Split(m.Content, " ")) > 2 {
-		cases, deaths, recovers, err := getCountry(strings.Split(m.Content, " ")[2])
+		cases, deaths, recovers, err := getCountry(m.Content[13:])
 		if err != nil {
 			fmt.Println(err)
 			s.ChannelMessageSend(m.ChannelID, "Country not found")
