@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/binary"
+	"errors"
 	"fmt"
 	"github.com/bwmarrin/discordgo"
 	"io"
@@ -16,6 +17,7 @@ var game string
 var adminID string
 var musicBuffer = make([][]byte, 0)
 var musicFile string //Music file has to be in .dca format
+var musicInUse bool = false
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
 	err := s.UpdateStreamingStatus(0, "with Ebola-chan", game)
@@ -63,7 +65,8 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				err := playMusicBuffer(s, m.GuildID, vs.ChannelID)
 				if err != nil {
 					fmt.Println(err)
-					s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
+					//TODO fix this to recognize different type of errors
+					s.ChannelMessageSend(m.ChannelID, "Can't use that right now")
 					return
 				}
 				return
@@ -105,10 +108,14 @@ func loadMusicBuffer() error {
 
 func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) error {
 	//TODO on connect
+	if musicInUse {
+		return errors.New("Bot already in use")
+	}
 	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
 	if err != nil {
 		return err
 	}
+	setMusic(true)
 	time.Sleep(250 * time.Millisecond)
 	vc.Speaking(true)
 	for _, buffer := range musicBuffer {
@@ -117,7 +124,12 @@ func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) err
 	vc.Speaking(false)
 	time.Sleep(250 * time.Millisecond)
 	vc.Disconnect()
+	defer setMusic(false)
 	return nil
+}
+
+func setMusic(x bool) {
+	musicInUse = x
 }
 
 func main() {
