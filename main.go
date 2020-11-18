@@ -8,6 +8,7 @@ import (
 	"io"
 	"os"
 	"os/signal"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -67,7 +68,6 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 					fmt.Println(err)
 					//TODO fix this to recognize different type of errors
 					s.ChannelMessageSend(m.ChannelID, "Can't use that right now")
-					return
 				}
 				return
 			}
@@ -76,6 +76,14 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			fmt.Println(err)
 			s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
 		}
+	} else if strings.HasPrefix(m.Content, "!count_guilds") {
+		guilds, err := s.UserGuilds(100, "", "")
+		if err != nil {
+			fmt.Println(err)
+			s.ChannelMessageSend(m.ChannelID, "Internal error")
+			return
+		}
+		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(guilds)))
 	}
 }
 
@@ -107,7 +115,6 @@ func loadMusicBuffer() error {
 }
 
 func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) error {
-	//TODO on connect
 	if musicInUse {
 		return errors.New("Bot already in use")
 	}
