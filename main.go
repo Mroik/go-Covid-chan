@@ -18,7 +18,7 @@ var game string
 var adminID string
 var musicBuffer = make([][]byte, 0)
 var musicFile string //Music file has to be in .dca format
-var musicInUse bool = false
+var musicInUse map[string]bool = make(map[string]bool)
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
 	err := s.UpdateStreamingStatus(0, "with Ebola-chan", game)
@@ -115,14 +115,20 @@ func loadMusicBuffer() error {
 }
 
 func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) error {
-	if musicInUse {
+	if musicInUse[guildID] {
 		return errors.New("Bot already in use")
 	}
 	vc, err := s.ChannelVoiceJoin(guildID, channelID, false, true)
 	if err != nil {
-		return err
+		//Temporary fix
+		if _, ok := s.VoiceConnections[guildID]; ok {
+			vc = s.VoiceConnections[guildID]
+		} else {
+			return err
+		}
 	}
-	setMusic(true)
+	setMusic(true, guildID)
+	defer setMusic(false, guildID)
 	time.Sleep(250 * time.Millisecond)
 	vc.Speaking(true)
 	for _, buffer := range musicBuffer {
@@ -131,12 +137,11 @@ func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) err
 	vc.Speaking(false)
 	time.Sleep(250 * time.Millisecond)
 	vc.Disconnect()
-	defer setMusic(false)
 	return nil
 }
 
-func setMusic(x bool) {
-	musicInUse = x
+func setMusic(x bool, guildID string) {
+	musicInUse[guildID] = x
 }
 
 func main() {
