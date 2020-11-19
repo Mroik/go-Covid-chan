@@ -37,6 +37,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	if strings.HasPrefix(m.Content, "!shutdown") && m.Author.ID == adminID {
 		s.Close()
 	} else if strings.HasPrefix(m.Content, "!covid top") {
+		s.ChannelTyping(m.ChannelID)
 		res, err := getTop()
 		if err != nil {
 			fmt.Println(err)
@@ -46,6 +47,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, res[x])
 		}
 	} else if strings.HasPrefix(m.Content, "!covid stats") && len(strings.Split(m.Content, " ")) > 2 {
+		s.ChannelTyping(m.ChannelID)
 		cases, deaths, recovers, err := getCountry(m.Content[13:])
 		if err != nil {
 			fmt.Println(err)
@@ -77,6 +79,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			s.ChannelMessageSend(m.ChannelID, "There was an internal problem")
 		}
 	} else if strings.HasPrefix(m.Content, "!count_guilds") {
+		s.ChannelTyping(m.ChannelID)
 		guilds, err := s.UserGuilds(100, "", "")
 		if err != nil {
 			fmt.Println(err)
