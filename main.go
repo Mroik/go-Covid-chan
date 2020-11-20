@@ -139,7 +139,11 @@ func playMusicBuffer(s *discordgo.Session, guildID string, channelID string) err
 	}
 	vc.Speaking(false)
 	time.Sleep(250 * time.Millisecond)
-	vc.Disconnect()
+	err = vc.Disconnect()
+	if err != nil {
+		musicInUse[guildID] = false
+		return err
+	}
 	return nil
 }
 
