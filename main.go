@@ -37,17 +37,19 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	fmt.Println(m.Author.Username + " " + m.Content)
 
-	temp_guild,_:=s.Guild(m.GuildID)
-	if !insertGuild(database,m.GuildID,temp_guild.Name){
-		fmt.Println("There was an error with inserting the guild")
-	}
-	temp_channel,_:=s.Channel(m.ChannelID)
-	if !insertChannel(database,m.ChannelID,temp_channel.Name,m.GuildID){
-		fmt.Println("There was an error with inserting the channel")
-	}
-	if !(strings.TrimSpace(m.Content)==""){
-		if !insertMessage(database,m.Author.ID,m.Content,m.ChannelID){
-			fmt.Println("There was an error with inserting the message")
+	if m.GuildID!=""{
+		temp_guild,_:=s.Guild(m.GuildID)
+		if !insertGuild(database,m.GuildID,temp_guild.Name){
+			fmt.Println("There was an error with inserting the guild")
+		}
+		temp_channel,_:=s.Channel(m.ChannelID)
+		if !insertChannel(database,m.ChannelID,temp_channel.Name,m.GuildID){
+			fmt.Println("There was an error with inserting the channel")
+		}
+		if !(strings.TrimSpace(m.Content)==""){
+			if !insertMessage(database,m.Author.ID,m.Content,m.ChannelID){
+				fmt.Println("There was an error with inserting the message")
+			}
 		}
 	}
 
@@ -174,6 +176,9 @@ func main() {
 	fmt.Scan(&adminID)
 	fmt.Scan(&game)
 	fmt.Scan(&musicFile)
+	fmt.Scan(&user)
+	fmt.Scan(&pass)
+	fmt.Scan(&dbname)
 
 	var err error
 	database,err=createDatabase(user,pass,"",dbname)

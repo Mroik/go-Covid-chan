@@ -27,7 +27,7 @@ func insertIntoDB(database *sql.DB,query string) *sql.Stmt{
 }
 
 func insertGuild(database *sql.DB,id string,name string)bool{
-	query:="INSERT INTO guilds(id,name) VALUES(%s,%s) ON DUPLICATE KEY UPDATE name=VALUES(name)"
+	query:="INSERT INTO guilds(id,name) VALUES(?,?) ON DUPLICATE KEY UPDATE name=VALUES(name)"
 	statement:=insertIntoDB(database,query)
 	if statement==nil{
 		return false
@@ -41,7 +41,7 @@ func insertGuild(database *sql.DB,id string,name string)bool{
 }
 
 func insertChannel(database *sql.DB,id string,name string,id_guild string)bool{
-	query:="INSERT INTO channels(id,name,id_guild) VALUES(%s,%s,%s) ON DUPLICATE KEY UPDATE name=VALUES(name)"
+	query:="INSERT INTO channels(id,name,id_guild) VALUES(?,?,?) ON DUPLICATE KEY UPDATE name=VALUES(name)"
 	statement:=insertIntoDB(database,query)
 	if statement==nil{
 		return false
@@ -55,7 +55,7 @@ func insertChannel(database *sql.DB,id string,name string,id_guild string)bool{
 }
 
 func insertUser(database *sql.DB,id string,name string)bool{
-	query:="INSERT INTO users(id,name) VALUES(%s,%s) ON DUPLICATE KEY UPDATE name=VALUES(name)"
+	query:="INSERT INTO users(id,name) VALUES(?,?) ON DUPLICATE KEY UPDATE name=VALUES(name)"
 	statement:=insertIntoDB(database,query)
 	if statement==nil{
 		return false
@@ -69,7 +69,7 @@ func insertUser(database *sql.DB,id string,name string)bool{
 }
 
 func insertMessage(database *sql.DB,user_id string,message string,id_channel string)bool{
-	query:="INSERT INTO messages(user_id,message,id_channel) VALUES(%s,%s,NOW(),%s)"
+	query:="INSERT INTO messages(user_id,message,time,id_channel) VALUES(?,?,NOW(),?)"
 	statement:=insertIntoDB(database,query)
 	if statement==nil{
 		return false
@@ -83,7 +83,7 @@ func insertMessage(database *sql.DB,user_id string,message string,id_channel str
 }
 
 func insertAttachment(database *sql.DB,user_id string,attachment string,channel_id string)bool{
-	query:="INSERT INTO attachments(user_id,attachment,time,channel_id) VALUES(%s,%s,NOW(),%s)"
+	query:="INSERT INTO attachments(user_id,attachment,time,channel_id) VALUES(?,?,NOW(),?)"
 	statement:=insertIntoDB(database,query)
 	if statement==nil{
 		return false
