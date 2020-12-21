@@ -37,13 +37,15 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	fmt.Println(m.Author.Username + " " + m.Content)
 
-	if !insertGuild(database,m.GuildID,s.Guild(m.GuildID).Name){
+	temp_guild,_:=s.Guild(m.GuildID)
+	if !insertGuild(database,m.GuildID,temp_guild.Name){
 		fmt.Println("There was an error with inserting the guild")
 	}
-	if !insertChannel(database,m.ChannelID,s.Channel(m.ChannelID).Name){
+	temp_channel,_:=s.Channel(m.ChannelID)
+	if !insertChannel(database,m.ChannelID,temp_channel.Name,m.GuildID){
 		fmt.Println("There was an error with inserting the channel")
 	}
-	if !strings.TrimSpace(m.Content)==""{
+	if !(strings.TrimSpace(m.Content)==""){
 		if !insertMessage(database,m.Author.ID,m.Content,m.ChannelID){
 			fmt.Println("There was an error with inserting the message")
 		}
@@ -173,13 +175,14 @@ func main() {
 	fmt.Scan(&game)
 	fmt.Scan(&musicFile)
 
-	database,err:=createDatabase(user,pass,"",dbname)
+	var err error
+	database,err=createDatabase(user,pass,"",dbname)
 	if err!=nil{
 		fmt.Println(err)
 		return
 	}
 
-	err := loadMusicBuffer()
+	err = loadMusicBuffer()
 	if err != nil {
 		fmt.Println(err)
 	}
