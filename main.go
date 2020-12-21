@@ -12,6 +12,7 @@ import (
 	"strings"
 	"syscall"
 	"time"
+	"database/sql"
 )
 
 var game string
@@ -19,6 +20,8 @@ var adminID string
 var musicBuffer = make([][]byte, 0)
 var musicFile string //Music file has to be in .dca format
 var musicInUse map[string]bool = make(map[string]bool)
+var database *sql.DB
+var user,pass,dbname string
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
 	err := s.UpdateStreamingStatus(0, "with Ebola-chan", game)
@@ -33,6 +36,18 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	}
 
 	fmt.Println(m.Author.Username + " " + m.Content)
+
+	if !insertGuild(database,m.GuildID,s.Guild(m.GuildID).Name){
+		fmt.Println("There was an error with inserting the guild")
+	}
+	if !insertChannel(database,m.ChannelID,s.Channel(m.ChannelID).Name){
+		fmt.Println("There was an error with inserting the channel")
+	}
+	if !strings.TrimSpace(m.Content)==""{
+		if !insertMessage(database,m.Author.ID,m.Content,m.ChannelID){
+			fmt.Println("There was an error with inserting the message")
+		}
+	}
 
 	if strings.HasPrefix(m.Content, "!shutdown") && m.Author.ID == adminID {
 		s.Close()
@@ -157,6 +172,12 @@ func main() {
 	fmt.Scan(&adminID)
 	fmt.Scan(&game)
 	fmt.Scan(&musicFile)
+
+	database,err:=createDatabase(user,pass,"",dbname)
+	if err!=nil{
+		fmt.Println(err)
+		return
+	}
 
 	err := loadMusicBuffer()
 	if err != nil {
