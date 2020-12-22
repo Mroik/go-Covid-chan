@@ -32,6 +32,7 @@ func insertGuild(database *sql.DB, id string, name string) bool {
 	if statement == nil {
 		return false
 	}
+	defer statement.Close()
 	_, err := statement.Exec(id, name)
 	if err != nil {
 		fmt.Println(err)
@@ -46,6 +47,7 @@ func insertChannel(database *sql.DB, id string, name string, id_guild string) bo
 	if statement == nil {
 		return false
 	}
+	defer statement.Close()
 	_, err := statement.Exec(id, name, id_guild)
 	if err != nil {
 		fmt.Println(err)
@@ -60,6 +62,7 @@ func insertUser(database *sql.DB, id string, name string) bool {
 	if statement == nil {
 		return false
 	}
+	defer statement.Close()
 	_, err := statement.Exec(id, name)
 	if err != nil {
 		fmt.Println(err)
@@ -74,6 +77,7 @@ func insertMessage(database *sql.DB, user_id string, message string, id_channel 
 	if statement == nil {
 		return false
 	}
+	defer statement.Close()
 	_, err := statement.Exec(user_id, message, id_channel)
 	if err != nil {
 		fmt.Println(err)
@@ -88,6 +92,7 @@ func insertAttachment(database *sql.DB, user_id string, attachment string, chann
 	if statement == nil {
 		return false
 	}
+	defer statement.Close()
 	_, err := statement.Exec(user_id, attachment, channel_id)
 	if err != nil {
 		fmt.Println(err)

@@ -55,6 +55,7 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	if strings.HasPrefix(m.Content, "!shutdown") && m.Author.ID == adminID {
 		s.Close()
+		database.Close()
 	} else if strings.HasPrefix(m.Content, "!covid top") {
 		s.ChannelTyping(m.ChannelID)
 		res, err := getTop()
