@@ -1,6 +1,7 @@
 package main
 
 import (
+	"database/sql"
 	"encoding/binary"
 	"errors"
 	"fmt"
@@ -12,7 +13,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-	"database/sql"
 )
 
 var game string
@@ -21,7 +21,7 @@ var musicBuffer = make([][]byte, 0)
 var musicFile string //Music file has to be in .dca format
 var musicInUse map[string]bool = make(map[string]bool)
 var database *sql.DB
-var user,pass,dbname string
+var user, pass, dbname string
 
 func onReady(s *discordgo.Session, event *discordgo.Ready) {
 	err := s.UpdateStreamingStatus(0, "with Ebola-chan", game)
@@ -37,17 +37,17 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 
 	fmt.Println(m.Author.Username + " " + m.Content)
 
-	if m.GuildID!=""{
-		temp_guild,_:=s.Guild(m.GuildID)
-		if !insertGuild(database,m.GuildID,temp_guild.Name){
+	if m.GuildID != "" {
+		temp_guild, _ := s.Guild(m.GuildID)
+		if !insertGuild(database, m.GuildID, temp_guild.Name) {
 			fmt.Println("There was an error with inserting the guild")
 		}
-		temp_channel,_:=s.Channel(m.ChannelID)
-		if !insertChannel(database,m.ChannelID,temp_channel.Name,m.GuildID){
+		temp_channel, _ := s.Channel(m.ChannelID)
+		if !insertChannel(database, m.ChannelID, temp_channel.Name, m.GuildID) {
 			fmt.Println("There was an error with inserting the channel")
 		}
-		if !(strings.TrimSpace(m.Content)==""){
-			if !insertMessage(database,m.Author.ID,m.Content,m.ChannelID){
+		if !(strings.TrimSpace(m.Content) == "") {
+			if !insertMessage(database, m.Author.ID, m.Content, m.ChannelID) {
 				fmt.Println("There was an error with inserting the message")
 			}
 		}
@@ -181,8 +181,8 @@ func main() {
 	fmt.Scan(&dbname)
 
 	var err error
-	database,err=createDatabase(user,pass,"",dbname)
-	if err!=nil{
+	database, err = createDatabase(user, pass, "", dbname)
+	if err != nil {
 		fmt.Println(err)
 		return
 	}
