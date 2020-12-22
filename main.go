@@ -107,6 +107,9 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 			return
 		}
 		s.ChannelMessageSend(m.ChannelID, strconv.Itoa(len(guilds)))
+	} else if strings.HasPrefix(m.Content, "!covid") {
+		s.ChannelTyping(m.ChannelID)
+		s.ChannelMessageSend(m.ChannelID, "```!covid stats <country>\n!covid top```")
 	}
 }
 
