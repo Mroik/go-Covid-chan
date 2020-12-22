@@ -51,6 +51,11 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 				fmt.Println("There was an error with inserting the message")
 			}
 		}
+		for _, x := range m.Attachments {
+			if !insertAttachment(database, m.Author.ID, x.URL, m.ChannelID) {
+				fmt.Println("There was an error with inserting the attchment")
+			}
+		}
 	}
 
 	if strings.HasPrefix(m.Content, "!shutdown") && m.Author.ID == adminID {
