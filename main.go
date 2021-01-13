@@ -115,6 +115,33 @@ func onMessageCreate(s *discordgo.Session, m *discordgo.MessageCreate) {
 	} else if strings.HasPrefix(m.Content, "!covid") {
 		s.ChannelTyping(m.ChannelID)
 		s.ChannelMessageSend(m.ChannelID, "```!covid stats <country>\n!covid top```")
+	} else if strings.HasPrefix(m.Content, "!assignRole") && len(strings.Split(m.Content, " ")) > 3 {
+		temp := strings.Split(m.Content, " ")
+		err := s.GuildMemberRoleAdd(temp[1], temp[3], temp[2])
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			s.ChannelTyping(m.ChannelID)
+			s.ChannelMessageSend(m.ChannelID, "Role assigned")
+		}
+	} else if strings.HasPrefix(m.Content, "!removeRole") && len(strings.Split(m.Content, " ")) > 3 {
+		temp := strings.Split(m.Content, " ")
+		err := s.GuildMemberRoleRemove(temp[1], temp[3], temp[2])
+		if err != nil {
+			fmt.Println(err)
+		} else {
+			s.ChannelTyping(m.ChannelID)
+			s.ChannelMessageSend(m.ChannelID, "Role removed")
+		}
+	} else if strings.HasPrefix(m.Content, "!showRoles") && len(strings.Split(m.Content, " ")) > 1 {
+		roles, err := s.GuildRoles(strings.Split(m.Content, " ")[1])
+		if err != nil {
+			s.ChannelMessageSend(m.ChannelID, "Couldn't show roles")
+			return
+		}
+		for _, x := range roles {
+			s.ChannelMessageSend(m.ChannelID, x.ID+" "+x.Name)
+		}
 	}
 }
 
